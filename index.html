@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Eclipse</title>
+</head>
+<body>
+    <!-- Décorations flottantes -->
+    <div class="floating-rose" style="left: 10%; animation-delay: 0s;">🌹</div>
+    <div class="floating-rose" style="left: 30%; animation-delay: 3s;">🥀</div>
+    <div class="floating-rose" style="left: 50%; animation-delay: 7s;">🌹</div>
+    <div class="floating-rose" style="left: 70%; animation-delay: 5s;">🥀</div>
+    <div class="floating-rose" style="left: 85%; animation-delay: 10s;">🌹</div>
+    <div class="floating-rose" style="left: 20%; animation-delay: 2s;">🌹</div>
+    <div class="floating-rose" style="left: 40%; animation-delay: 4s;">🥀</div>
+    <div class="floating-rose" style="left: 60%; animation-delay: 8s;">🌹</div>
+    <div class="floating-rose" style="left: 80%; animation-delay: 6s;">🥀</div>
+    <div class="floating-rose" style="left: 95%; animation-delay: 2s;">🌹</div>
+    
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">Eclipse</div>
+            <ul class="nav-links">
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#communaute">Communauté</a></li>
+                <li><a href="#videos">BookTok</a></li>
+                <li><a href="#boutique">Boutique</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <button class="btn btn-secondary" onclick="openModal('login')">Connexion</button>
+                <button class="btn btn-primary" onclick="openModal('signup')">Inscription</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Plongez dans l'univers<br>de la Dark Romance</h1>
+        <p>Rejoignez une communauté passionnée de lectrices et lecteurs.<br>Partagez, discutez et découvrez vos prochains coups de cœur dans les ténèbres.</p>
+        <button class="btn btn-primary hero-cta" onclick="openModal('signup')" style="font-size: 1.2rem; padding: 1.2rem 3rem;">
+            Rejoindre la communauté
+        </button>
+    </section>
+
+    <div class="divider">⚜️</div>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="feature-card">
+            <h3>Forums de Discussion</h3>
+            <p>Échangez avec d'autres passionné(e)s sur vos livres préférés, partagez vos critiques et découvrez de nouvelles recommandations dans un espace dédié.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>BookTok Exclusif</h3>
+            <p>Créez et regardez des vidéos courtes dédiées à la dark romance. Partagez vos TBR, vos avis et vos moments coup de cœur avec la communauté.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Boutique eBooks</h3>
+            <p>Accédez à une large sélection de livres numériques à prix réduits, classés par catégories pour faciliter vos découvertes les plus sombres.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Contact Direct</h3>
+            <p>Vous ne trouvez pas un livre ? Contactez-nous directement pour des recommandations personnalisées et des demandes spéciales.</p>
+        </div>
+    </section>
+
+    <!-- Modal Connexion -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('login')">&times;</button>
+            <h2>Connexion</h2>
+            <div id="loginError" class="error-message"></div>
+            <div id="loginSuccess" class="success-message"></div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Mot de passe</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Se connecter</button>
+            </form>
+            <div class="modal-footer">
+                <p>Pas encore de compte ? <a onclick="switchModal('login', 'signup')">S'inscrire</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Inscription -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('signup')">&times;</button>
+            <h2>Inscription</h2>
+            <div id="signupError" class="error-message"></div>
+            <div id="signupSuccess" class="success-message"></div>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signup-username">Nom d'utilisateur</label>
+                    <input type="text" id="signup-username" required placeholder="Votre pseudonyme">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Mot de passe</label>
+                    <input type="password" id="signup-password" required placeholder="Minimum 8 caractères">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Créer mon compte</button>
+            </form>
+            <div class="modal-footer">
+                <p>Déjà un compte ? <a onclick="switchModal('signup', 'login')">Se connecter</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Décoration bougie -->
+    <!--<div class="candle-decoration">🕯️</div>-->
+
+    <script>
+        function openModal(type) {
+    document.getElementById(type + 'Modal').classList.add('active');
+}
+
+function closeModal(type) {
+    document.getElementById(type + 'Modal').classList.remove('active');
+    document.getElementById(type + 'Error').style.display = 'none';
+    document.getElementById(type + 'Success').style.display = 'none';
+}
+
+function switchModal(closeType, openType) {
+    closeModal(closeType);
+    openModal(openType);
+}
+
+function showMessage(type, formType, message) {
+    const element = document.getElementById(formType + (type === 'error' ? 'Error' : 'Success'));
+    element.textContent = message;
+    element.style.display = 'block';
+            
+    setTimeout(() => {
+        element.style.display = 'none';
+    }, 5000);
+}
+
+async function handleSignup(event) {
+    event.preventDefault();
+            
+    const username = document.getElementById('signup-username').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+            
+    try {
+        const response = await fetch('register.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password
+        })
+    });
+                
+    const data = await response.json();
+                
+        if (data.success) {
+            showMessage('success', 'signup', data.message);
+            setTimeout(() => {
+                window.location.href = 'dashboard.php';
+                }, 2000);
+        } else {
+            showMessage('error', 'signup', data.message);
+        }
+    } catch (error) {
+        showMessage('error', 'signup', 'Erreur de connexion au serveur');
+    }
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+            
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+            
+    try {
+        const response = await fetch('login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
+                
+        const data = await response.json();
+                
+        if (data.success) {
+            showMessage('success', 'login', data.message);
+            setTimeout(() => {
+                window.location.href = 'dashboard.php';
+            }, 2000);
+        } else {
+            showMessage('error', 'login', data.message);
+        }
+    } catch (error) {
+        showMessage('error', 'login', 'Erreur de connexion au serveur');
+    }
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+    }
+}
+    </script>
+</body>
+</html>
