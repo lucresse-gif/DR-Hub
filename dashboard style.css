@@ -951,24 +951,6 @@
    =================================== */
 .danger-zone {
     border-color: #dc3545;
-    margin-right: 0.5rem;
-    background: var(--card-bg);
-    border-radius: 0; /* Supprime les bords arrondis */
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    max-width: 500px; /* Largeur fixe pour un carré parfait */
-    width: 500px; /* Largeur fixe */
-    height: 500px; /* Hauteur fixe = carré parfait */
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Centre verticalement le contenu */
-    align-items: center; /* Centre horizontalement le contenu */
-    text-align: center;
-    position: relative;
-    overflow: hidden;
 }
 .danger-title {
     color: #dc3545;
