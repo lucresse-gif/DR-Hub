@@ -137,7 +137,7 @@ $user = getCurrentUser();
             <!-- Autres onglets (à développer) -->
             <div id="discussions" class="tab-content">
                 <h2 class="section-title">Discussions</h2>
-                <p style="color: #c4a884;"><?php include 'discussions.php' ?>Section en développement...</p>
+                <p style="color: #c4a884;">Section en développement...</p>
             </div>
 
             <div id="messages" class="tab-content">
@@ -156,8 +156,41 @@ $user = getCurrentUser();
             </div>
 
             <div id="boutique" class="tab-content">
+                <div class="section-header-simple">
                 <h2 class="section-title">Boutique</h2>
-                <p style="color: #c4a884;">Section en développement...</p>
+                <p class="section-header-description">Découvrez notre collection de dark romance</p>
+            </div>
+
+            <!-- Barre de recherche -->
+            <div class="shop-search-bar">
+                <input type="text" id="shopSearch" placeholder="Rechercher un livre, un auteur..." class="search-input" onkeyup="searchBooks()">
+            </div>
+
+            <!-- Livres mis en avant -->
+            <div id="featuredBooks" class="featured-section">
+                <h3 class="shop-section-title">📚 Livres mis en avant</h3>
+                <div id="featuredBooksList" class="books-grid">
+                    <div class="loading-message">
+                        <p>Chargement des livres...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catégories avec accordéon -->
+            <div id="categoriesAccordion" class="categories-accordion">
+                <h3 class="shop-section-title">📖 Parcourir par catégorie</h3>
+                <div id="categoriesList">
+                    <div class="loading-message">
+                        <p>Chargement des catégories...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résultats de recherche -->
+            <div id="searchResults" style="display: none;">
+                <h3 class="shop-section-title">🔍 Résultats de recherche</h3>
+                <div id="searchBooksList" class="books-grid"></div>
+            </div>
             </div>
 
             <div id="profil" class="tab-content">
@@ -259,7 +292,9 @@ $user = getCurrentUser();
                 loadCategories();
             } else if (tabName === 'profil') {
                 loadProfileData();
-            }
+            } else if (tabName === 'boutique') {    
+                loadShop();                         
+            }                                       
         }
 
         async function logout() {
@@ -281,7 +316,7 @@ $user = getCurrentUser();
             }
         }
 
-        // === FONCTIONS POUR LES DISCUSSIONS ===
+        //Discussions
 
         async function loadCategories() {
             try {
@@ -675,6 +710,230 @@ $user = getCurrentUser();
             } catch (error) {
                 console.error('Erreur:', error);
                 alert('Erreur lors de la suppression');
+            }
+        }
+        //script pour la boutique
+        let currentBooks = [];
+
+        function loadShop() {
+            loadFeaturedBooks();
+            loadCategories();
+        }
+
+        async function loadFeaturedBooks() {
+            try {
+                const response = await fetch('boutique_api.php?action=get_featured');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayFeaturedBooks(data.books);
+                }
+            } catch (error) {
+                console.error('Erreur chargement livres:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('boutique_api.php?action=get_categories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentCategories = data.categories;
+                    displayCategories(data.categories);
+                }
+            } catch (error) {
+                console.error('Erreur chargement catégories:', error);
+            }
+        }
+
+        function displayFeaturedBooks(books) {
+            const container = document.getElementById('featuredBooksList');
+            
+            if (books.length === 0) {
+                container.innerHTML = '<p class="no-books-message">Aucun livre mis en avant</p>';
+                return;
+            }
+            
+            container.innerHTML = books.map(book => createBookCard(book)).join('');
+        }
+
+        function displayCategories(categories) {
+            const container = document.getElementById('categoriesList');
+            
+            if (categories.length === 0) {
+                container.innerHTML = '<p class="no-categories-message">Aucune catégorie disponible</p>';
+                return;
+            }
+            
+            container.innerHTML = categories.map(category => `
+                <div class="category-accordion-item">
+                    <div class="category-header" onclick="toggleCategory(${category.id})">
+                        <div class="category-info">
+                            <span class="category-icon">${category.icon}</span>
+                            <span class="category-name">${category.name}</span>
+                            <span class="category-count">(${category.books_count} livre${category.books_count > 1 ? 's' : ''})</span>
+                        </div>
+                        <span class="category-toggle" id="toggle-${category.id}">▼</span>
+                    </div>
+                    <div class="category-content" id="category-${category.id}" style="display: none;">
+                        <div class="books-grid">
+                            <div class="loading-message"><p>Chargement...</p></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleCategory(categoryId) {
+            const content = document.getElementById(`category-${categoryId}`);
+            const toggle = document.getElementById(`toggle-${categoryId}`);
+            
+            if (content.style.display === 'none') {
+                // Ouvrir la catégorie
+                content.style.display = 'block';
+                toggle.textContent = '▲';
+                
+                // Charger les livres si pas déjà chargés
+                if (content.querySelector('.loading-message')) {
+                    await loadCategoryBooks(categoryId);
+                }
+            } else {
+                // Fermer la catégorie
+                content.style.display = 'none';
+                toggle.textContent = '▼';
+            }
+        }
+
+        async function loadCategoryBooks(categoryId) {
+            try {
+                const response = await fetch(`boutique_api.php?action=get_books&category_id=${categoryId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const content = document.getElementById(`category-${categoryId}`);
+                    const booksGrid = content.querySelector('.books-grid');
+                    
+                    if (data.books.length === 0) {
+                        booksGrid.innerHTML = '<p class="no-books-message">Aucun livre dans cette catégorie</p>';
+                    } else {
+                        booksGrid.innerHTML = data.books.map(book => createBookCard(book)).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur chargement livres catégorie:', error);
+            }
+        }
+
+        function createBookCard(book) {
+            const hasDiscount = book.original_price && book.original_price > book.price;
+            const isOwned = book.is_owned > 0;
+            
+            return `
+                <div class="book-card ${isOwned ? 'owned' : ''}" onclick="viewBookDetails(${book.id})">
+                    <div class="book-cover">
+                        <img src="${book.cover_image}" alt="${book.title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%238b0000%22 width=%22200%22 height=%22300%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22%23d4af37%22 text-anchor=%22middle%22 dy=%22.3em%22>📚</text></svg>'">
+                        ${isOwned ? '<div class="owned-badge">✓ Possédé</div>' : ''}
+                        ${book.is_featured ? '<div class="featured-badge">⭐ Coup de cœur</div>' : ''}
+                    </div>
+                    <div class="book-info">
+                        <h4 class="book-title">${book.title}</h4>
+                        <p class="book-author">par ${book.author}</p>
+                        <div class="book-price">
+                            ${hasDiscount ? `<span class="original-price">${book.original_price}€</span>` : ''}
+                            <span class="current-price">${book.price}€</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewBookDetails(bookId) {
+            // Créer un modal avec les détails du livre
+            fetch(`boutique_api.php?action=get_book&book_id=${bookId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showBookModal(data.book);
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        function showBookModal(book) {
+            const isOwned = book.is_owned > 0;
+            const hasDiscount = book.original_price && book.original_price > book.price;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content modal-content-large">
+                    <button class="close-modal" onclick="this.closest('.modal').remove()">&times;</button>
+                    <div class="book-modal-content">
+                        <div class="book-modal-cover">
+                            <img src="${book.cover_image}" alt="${book.title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%238b0000%22 width=%22200%22 height=%22300%22/></svg>'">
+                        </div>
+                        <div class="book-modal-info">
+                            <h2>${book.title}</h2>
+                            <p class="book-modal-author">Par ${book.author}</p>
+                            
+                            <div class="book-modal-meta">
+                                <span>📖 ${book.pages || 'N/A'} pages</span>
+                                <span>🌍 ${book.language}</span>
+                                <span>📚 ${book.category_name}</span>
+                            </div>
+                            
+                            <div class="book-modal-description">
+                                <h3>Synopsis</h3>
+                                <p>${book.description || 'Aucune description disponible.'}</p>
+                            </div>
+                            
+                            <div class="book-modal-price">
+                                ${hasDiscount ? `<span class="original-price">${book.original_price}€</span>` : ''}
+                                <span class="current-price">${book.price}€</span>
+                            </div>
+                            
+                            ${isOwned 
+                                ? '<button class="btn btn-secondary btn-full-width" disabled>✓ Déjà dans votre bibliothèque</button>'
+                                : `<button class="btn btn-primary btn-full-width" onclick="purchaseBook(${book.id})">Acheter maintenant</button>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function purchaseBook(bookId) {
+            alert('Système de paiement en cours de développement.\nFonctionnalité disponible prochainement !');
+            // TODO: Implémenter Stripe
+        }
+
+        async function searchBooks() {
+            const query = document.getElementById('shopSearch').value;
+            const resultsDiv = document.getElementById('searchResults');
+            const resultsList = document.getElementById('searchBooksList');
+            
+            if (query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`boutique_api.php?action=search&q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultsDiv.style.display = 'block';
+                    
+                    if (data.books.length === 0) {
+                        resultsList.innerHTML = '<p class="no-books-message">Aucun livre trouvé</p>';
+                    } else {
+                        resultsList.innerHTML = data.books.map(book => createBookCard(book)).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur recherche:', error);
             }
         }
     </script>
